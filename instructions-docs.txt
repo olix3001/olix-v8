@@ -1,0 +1,145 @@
+==< MICROINSTRUCTIONS >==
+00: CO  - Program (C)ounter (O)utput         - output program counter to the bus
+01: CI  - Program (C)ounter (I)nput          - set program counter to the value from the bus
+02: CE  - (C)ounter (E)nable                 - enable program counter incrementation
+03: SO  - (S)tack pointer (O)utput           - output stack pointer to the bus
+04: SE  - (S)tack pointer (E)nable           - enable program counter incrementation/decrementation
+05: SD  - (S)tack pointer (D)ecrement        - decrement stack pointer if it's enabled
+06: MS  - (M)emory (S)elect                  - select memory address (for both RAM and ROM) indicated by value on the bus
+07: MI  - (M)emory (I)n                      - set selected RAM address to the value on the bus
+08: MO  - (M)emory (O)utput                  - output value from the selected RAM address onto the bus
+09: MRO - (M)emory (R)om (O)utput            - output value from the selected ROM address onto the bus
+0A: II  - (I)nstruction register (I)nput     - put value from the address on the bus into the instruction register
+0B: AO  - (A)LU (O)utput                     - output value from the ALU result to the bus
+0C: AC  - (A)LU (C)arry                      - enable carry in the ALU
+0D: AS  - (A)LU (S)ubstract                  - invert the second value on the ALU to get the subtraction
+0E: AA  - (A)LU (A)dder                      - enable adder on the ALU
+0F: ALA - (A)LU (L)ogic (A)nd                - set ALU to do logic AND operation
+10: ALO - (A)LU (L)ogic (O)r                 - set ALU to do logic OR operation
+11: AFO - (A)LU (F)lag (O)utput              - output ALU flags to the bus
+12: LRA - (L)oad (R)egister (A)              - set %A to the value from the bus
+13: LRB - (L)oad (R)egister (B)              - set %B to the value from the bus
+14: ORA - (O)utput (R)egister (A)            - output value from %A to the bus
+15: ORB - (O)utput (R)egister (B)            - output value from %B to the bus
+16: INV - (I)(N)put (V)alue                    - output value from the input to the bus
+17: OUTV- (O)(U)(T)put (V)alue                 - output value from the bus to the output
+
+18: SI  - (S)top (I)nstruction               - reset microcode instruction counter
+19: SI1 - (S)top (I)nstruction first bit     - stop instruction if first bit on the bus is equal to 0
+
+1A: HLT - (H)a(L)(T)                         - stop the clock
+
+
+==< INSTRUCTION -> MICROINSTRUCTIONS >==
+*:
+  0: CO MS
+  1: CE MRO II
+
+LDA:
+  2: CO MS 
+  3: MRO MS CE
+  4: MO LRA
+  5: SI
+
+LDB:
+  2: CO MS 
+  3: MRO MS CE
+  4: MO LRB
+  5: SI
+
+STA:
+  2: CO MS
+  3: MRO MS CE
+  4: ORA MI
+  5: SI
+
+STB:
+  2: CO MS 
+  3: MRO MS CE
+  4: ORB MI
+  4: SI 
+
+ADD:
+  2: AA AO LRA
+  3: SI 
+
+ADC:
+  2: AC AA AO LRA
+  3: SI 
+
+SUB:
+  2: AS AO LRA
+  3: SI 
+
+AND:
+  2: ALA AO LRA 
+  3: SI 
+
+OR:
+  2: ALO AO LRA 
+  3: SI 
+
+JMP:
+  2: CO MS
+  3: MRO CI
+  4: SI 
+
+JO:
+  2: AFO SI1
+  3: CO MS
+  4: MRO CI
+  4: SI
+
+PUSH:
+  2: SE SD 
+  3: SO MS 
+  4: ORA MI 
+  5: SI 
+
+POP:
+  2: SO MS 
+  3: MO LRA SE
+  4: SI 
+
+ST:
+  2: CO MS 
+  3: MRO LRA CE 
+  4: SI 
+
+INA:
+  2: INV LRA
+  3: SI 
+
+INB:
+  2: INV LRB 
+  3: SI 
+
+OUTA: 
+  2: ORA OUTV 
+  3: SI 
+
+OUTB:
+  2: ORB OUTV
+  3: SI
+  
+PCA:
+  2: CO LRA
+  3: SI
+
+APC:
+  2: ORA CI
+  3: SI
+  
+JRR:
+  2: CO MS
+  3: MRO MS CE
+  4: MO CI
+  5: MO CI
+  5: SI
+  
+NOP:
+  2: SI 
+
+HLT:
+  2: HLT
+  3: SI (Not necessary)
